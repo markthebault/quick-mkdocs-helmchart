@@ -85,33 +85,33 @@ mkdocConfig:
   site_name: Awesome documentation
   docs_dir: /docs
   theme:
-    icon:
-      repo: fontawesome/brands/github
     name: material
-    features:
-      - navigation.tabs
-      - toc.integrate
-      - navigation.instant
-    palette:
-      primary: blue
-    plugins:
-      - search
-  markdown_extensions:
-    - toc:
-        toc_depth: 2
-  nav:
-    - Index: index.md
-    - Hello: hello.md
-    - Subpages:
-        Subpage 1: sub1.md
-        Subpage 2: sub2.md
+  #   icon:
+  #     repo: fontawesome/brands/github
+  #   features:
+  #     - navigation.tabs
+  #     - toc.integrate
+  #     - navigation.instant
+  #   palette:
+  #     primary: blue
+  #   plugins:
+  #     - search
+  # markdown_extensions:
+  #   - toc:
+  #       toc_depth: 2
+  # nav:
+  #   - Index: index.md
+  #   - Hello: hello.md
+  #   - Subpages:
+  #       Subpage 1: sub1.md
+  #       Subpage 2: sub2.md
 
 documentationFiles:
   index.md: |
     # Hello this is a awesome start for a documentation !!!
-  hello.md: |
-    # Hello here is `hello.md` page!
-  sub1.md: |
-    ## subpage 1
-  sub2.md: |
-    ## subpage 2
+  # hello.md: |
+  #   # Hello here is `hello.md` page!
+  # sub1.md: |
+  #   ## subpage 1
+  # sub2.md: |
+  #   ## subpage 2
