@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "quick-mkdocs.fullname" . }}-doc-cm
+  labels:
+    {{- include "quick-mkdocs.labels" . | nindent 4 }}
+data:
+  {{- toYaml .Values.documentationFiles | nindent 2 }}

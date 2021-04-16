@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "quick-mkdocs.fullname" . }}
+  labels:
+    {{- include "quick-mkdocs.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "quick-mkdocs.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+      {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap-mkdocs-config.yaml") . | sha256sum }}
+        checksum/docs: {{ include (print $.Template.BasePath "/configmap-documentation.yaml") . | sha256sum }}
+      labels:
+        {{- include "quick-mkdocs.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "quick-mkdocs.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: dock-generator
+          resources:
+              {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.docsGeneratorImage.repository }}:{{ .Values.docsGeneratorImage.tag }}"
+          args:
+            - build
+            - -d
+            - /usr/share/nginx/html
+            - -f 
+            - /conf/mkdocs.yml
+          volumeMounts:
+            - name: html-content
+              mountPath: /usr/share/nginx/html
+            - name: docs
+              mountPath: /docs
+              readOnly: true
+            - name: mkdocs-config
+              mountPath: /conf
+              
+      containers:
+        - name: nginx
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /usr/share/nginx/html
+              name: html-content
+              readOnly: true
+      volumes:
+        - name: html-content
+          emptyDir:
+            sizeLimit: 50Mi
+        - name: docs
+          configMap:
+            name: {{ include "quick-mkdocs.fullname" . }}-doc-cm
+        - name: mkdocs-config
+          configMap:
+            name: {{ include "quick-mkdocs.fullname" . }}-mkdoc-conf
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
